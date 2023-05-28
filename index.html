@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Web Contenedores Interior</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #4a8594;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #search-input {
+            height: 50px;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 45px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #dbe0e3;
+        }
+
+        .contenedor {
+            font-weight: bold;
+        }
+
+        .pasillo {
+            color: blue;
+        }
+
+        .hora {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Web Contenedores Interior</h1>
+
+    <div class="search-container">
+        <input id="search-input" type="number" style="height: 80px; width: 100%;" autofocus placeholder="Buscar...">
+    </div>
+
+    <div id="card-list"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Configura la API de Google Sheets
+            gapi.load('client', startApp);
+
+            function startApp() {
+                gapi.client.init({
+                    apiKey: 'AIzaSyDPmDdWgPDSwY6Y6gZLRPhZHe9XhprXo68',
+                    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+                }).then(function () {
+                    // Llama a la función para cargar los datos de la hoja de Google Sheets
+                    loadSheetData();
+                });
+            }
+
+            function loadSheetData() {
+                gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: '1ehXhYz3vDgZt88KmXLLjAVZy3jAQcFrAGD8YptokEkg',
+                    range: 'Respuestas de formulario 1!A2:D',
+                }).then(function (response) {
+                    var data = response.result.values;
+
+                    // Limpia la lista de cards antes de agregar los nuevos datos
+                    $('#card-list').empty();
+
+                    // Recorre los datos y crea las cards
+                    for (var i = 0; i < data.length; i++) {
+                        var cardData = data[i];
+
+                        // Crea la card con los datos de la hoja de Google Sheets
+                        var card = $('<div class="card"></div>');
+                        var contenedor = $('<div class="contenedor">CONTENEDOR: ' + cardData[2] + '</div>');
+                        var pasillo = $('<div class="pasillo">PASILLO: ' + cardData[3] + '</div>');
+                        var hora = $('<div class="hora">HORA: ' + cardData[1] + '</div>');
+
+                        // Agrega los elementos a la card
+                        card.append(contenedor);
+                        card.append(pasillo);
+                        card.append(hora);
+
+                        // Agrega la card a la lista
+                        $('#card-list').append(card);
+                    }
+                });
+            }
+
+            // Cada vez que se ingresen nuevos datos en la hoja de Google Sheets, actualiza la página
+            var pollInterval = setInterval(loadSheetData, 60000);
+
+            // Función para manejar la búsqueda
+            function search() {
+                var searchValue = $('#search-input').val().toLowerCase(); // Obtén el valor de búsqueda y conviértelo a minúsculas
+
+                $('.card').each(function () {
+                    var cardText = $(this).text().toLowerCase(); // Obtén el texto de la card y conviértelo a minúsculas
+
+                    // Verifica si el texto de la card contiene el valor de búsqueda
+                    if (cardText.includes(searchValue)) {
+                        $(this).show(); // Muestra la card si coincide con la búsqueda
+                    } else {
+                        $(this).hide(); // Oculta la card si no coincide con la búsqueda
+                    }
+                });
+            }
+
+            // Asocia la función de búsqueda al evento de cambio en el input de búsqueda
+            $('#search-input').on('input', search);
+        });
+    </script>
+    <script src="https://apis.google.com/js/api.js"></script>
+</body>
+
+</html>
